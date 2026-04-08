@@ -1,5 +1,0 @@
-streamlit
-pandas
-openpyxl
-thefuzz
-python-levenshtein
