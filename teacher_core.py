@@ -271,6 +271,36 @@ def expand_class_range(text, known_classes=None, resolved_ambiguities=None):
 
     # Bỏ sĩ số trong ngoặc: 10A1(52) → 10A1
     text = re.sub(r'((?:0?[1-9]|1[0-2])[A-Za-zÀ-ỹ]+\d*)\(\d+\)', r'\1', text, flags=re.UNICODE)
+
+    # ── Tiền xử lý: tách dạng <grade><multi_alpha> nhờ known_classes ──────────
+    # Ví dụ: '7ABCD' → '7A,7B,7C,7D'  khi known = {7A,7B,7C,7D}
+    # Điều kiện: token có ≥2 chữ cái, KHÔNG có chữ số, và KHÔNG nằm trong known_classes,
+    # nhưng mỗi chữ cái tách ra đều có trong known_classes dưới dạng <grade><ch>.
+    if known_classes:
+        def _expand_multi_alpha(m):
+            grade = m.group(1)
+            alpha = m.group(2)
+            grade_norm = str(int(grade))  # bỏ leading zero
+            # Nếu đã là lớp hợp lệ trong known → giữ nguyên
+            if f"{grade_norm}{alpha}" in known_classes or f"{grade}{alpha}" in known_classes:
+                return m.group(0)
+            # Thử tách từng chữ cái (ưu tiên grade không có leading zero)
+            candidates = [f"{grade_norm}{ch}" for ch in alpha]
+            if all(c in known_classes for c in candidates):
+                return ",".join(candidates)
+            # Thử với grade gốc (có thể có leading zero)
+            candidates_raw = [f"{grade}{ch}" for ch in alpha]
+            if all(c in known_classes for c in candidates_raw):
+                return ",".join(candidates_raw)
+            return m.group(0)
+
+        text = re.sub(
+            r'(?<!\w)(0?[1-9]|1[0-2])([A-Za-zÀ-ỹ]{2,})(?!\d)',
+            _expand_multi_alpha,
+            text,
+            flags=re.UNICODE
+        )
+
     classes = []
 
     # ── Xử lý range: 1A1-1A5, 9B1 đến 9B3, 10A1-10A5 ──────────────────────
