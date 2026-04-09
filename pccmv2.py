@@ -12,7 +12,7 @@ from teacher_core import (process_data, detect_header_row, find_column,
 
 NIEN_KHOA_OPTIONS = ["2025-2026", "2026-2027", "2027-2028"]
 
-st.set_page_config(page_title="--PCCM--", page_icon="🔞", layout="wide")
+st.set_page_config(page_title="PCCM chia cấp", page_icon="🔞", layout="wide")
 
 # ── CSS ──────────────────────────────────────────────────────────────────────
 st.markdown("""
